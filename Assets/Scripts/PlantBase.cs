@@ -11,6 +11,7 @@ public enum PlantStance
 
 public enum PlantType
 {
+	any,
 	corn,
 	potato,
 	onion,

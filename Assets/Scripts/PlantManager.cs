@@ -65,7 +65,35 @@ public class PlantManager : MonoBehaviour
 		while (isDistributing) {
 			yield return new WaitForEndOfFrame ();
 		}
+
+		isDistributing = true;
+		StartCoroutine (FillRemaining ());
+		while (isDistributing) {
+			yield return new WaitForEndOfFrame ();
+		}
 		Debug.Log ("Done Spawning");
+	}
+
+	IEnumerator FillRemaining ()
+	{
+		Debug.Log ("Filling left-overs...");
+		isDistributing = true;
+		// fill the rest with corn
+		while (true) {
+			// get a list of all the available plant coordinates
+			List<Vector2> validCoords = GetValidCoordsForType (PlantType.any);
+			// stop spawning if no coords
+			if (validCoords.Count == 0) {
+				break;
+			}
+			int patchSize = 10;
+			// reduce corn to spawn
+			// generate a random spawn place
+			int randomPlace = Random.Range (0, validCoords.Count);
+			FloodFillCorn (validCoords [randomPlace], patchSize, 1000);
+			yield return new WaitForEndOfFrame ();
+		}
+		isDistributing = false;
 	}
 
 	IEnumerator DistributeCorn ()
@@ -98,7 +126,7 @@ public class PlantManager : MonoBehaviour
 		Debug.Log ("Planting potato...");
 		isDistributing = true;
 		// how many seeds
-		int numSeeds = 2 * cropRowCount;
+		int numSeeds = 3 * cropRowCount;
 		while (numSeeds > 0) {
 			// get a list of all the available plant coordinates
 			List<Vector2> validCoords = GetValidCoordsForType (PlantType.potato);
@@ -121,7 +149,7 @@ public class PlantManager : MonoBehaviour
 		Debug.Log ("Planting onions...");
 		isDistributing = true;
 		// how many seeds
-		int numSeeds = cropRowCount - 1;
+		int numSeeds = cropRowCount;
 		while (numSeeds > 0) {
 			// get a list of all the available plant coordinates
 			List<Vector2> validCoords = GetValidCoordsForType (PlantType.onion);
@@ -329,6 +357,9 @@ public class PlantManager : MonoBehaviour
 					break;
 				case PlantType.shroom:
 					isValid = CheckPotatoValid (i, j);
+					break;
+				case PlantType.any:
+					isValid = true;
 					break;
 				}
 
