@@ -8,6 +8,7 @@ public class WorldTile
 	private int _x;
 	private int _y;
 	public bool marked;
+	public WorldTile previous;
 
 	public int x {
 		get {
