@@ -68,19 +68,72 @@ public class farmerScript : MonoBehaviour {
 
     private void calculatePath()
     {
-        List<KeyValuePair<WorldTile, WorldTile>> path = new List<KeyValuePair<WorldTile, WorldTile>>();
-        List<WorldTile> openSet = new List<WorldTile>();
+        List<WorldTile> path = new List<WorldTile>();
+        LinkedList<WorldTile> openSet = new LinkedList<WorldTile>();
 
-        
+        List<WorldTile> visited = new List<WorldTile>();
+
+        openSet.AddFirst(plantM.GetTile(Mathf.RoundToInt(gridPos.x), Mathf.RoundToInt(gridPos.y)));
+
+        while(openSet.Count > 0)
+        {
+            WorldTile next = FindNearest(openSet);
+
+            if (next != plantM.GetTile(Mathf.RoundToInt(targetPos.x), Mathf.RoundToInt(targetPos.y)))
+            {
+                WorldTile checkNode = openSet.First.Value;
+                checkAdjacent(new Vector2(checkNode.x, checkNode.y));
+                for (int i = 0; i < adjacentPath.Length; i++)
+                {
+                    if (adjacentPath[i] != null)
+                    {
+
+                    }
+                    else
+                    {
+                        plantM.GetTile(Mathf.RoundToInt(adjacentPath[i].x), Mathf.RoundToInt(adjacentPath[i].y)).previous = checkNode;
+                        openSet.AddFirst(plantM.GetTile(Mathf.RoundToInt(adjacentPath[i].x), Mathf.RoundToInt(adjacentPath[i].y)));
+                        openSet.Remove(checkNode);
+                        visited.Add(checkNode);
+                    }
+                }
+            }else
+            {
+                
+
+            }
+
+        }
 
     }
 
-    private void checkAdjacent()
+    private WorldTile FindNearest(LinkedList<WorldTile> tileSet)
+    {
+        WorldTile near = null;
+        float distance = 1000;
+        for(int i = 0; i < tileSet.Count; i++)
+        {
+            WorldTile next = tileSet.First.Value;
+            float newDisX = next.x - targetPos.x;
+            float newDisY = next.y - targetPos.y;
+            float newDist = newDisX * newDisX + newDisY * newDisY;
+            if(newDist < distance)
+            {
+                distance = newDist;
+                near = tileSet.First.Value;
+            }
+            tileSet.RemoveFirst();
+        }
+
+        return near;
+    }
+
+    private void checkAdjacent(Vector2 pos)
     {
 
         List<Vector2> adjacency = new List<Vector2>();
 
-        PlantBase[] neighbours = PlantManager.GetNeighboursForPosition(gridPos);
+        PlantBase[] neighbours = PlantManager.GetNeighboursForPosition(pos);
         for(int i = 0; i < neighbours.Length; i++)
         {
             if(neighbours[i] != null)
