@@ -8,9 +8,19 @@ public class PlantManager : MonoBehaviour
 	WorldTile[,] world;
 	public int worldX = 64;
 	public int worldY = 64;
+
+	public GameObject hedgePrefab;
+	public GameObject pathPrefab;
+	public GameObject cornPrefab;
+	public GameObject potatoPrefab;
+	public GameObject onionPrefab;
+
+	public int cropRowCount = 0;
+
 	// Use this for initialization
 	void Start ()
 	{
+		cropRowCount = 0;
 		singleton = this;
 		world = new WorldTile[worldX, worldY];
 
@@ -30,15 +40,258 @@ public class PlantManager : MonoBehaviour
 		FillPathRow (worldX - 2);
 		FillHedgeRow (worldX - 1);
 
-		DistributePlants ();
+		StartCoroutine (DistributePlants ());
 
 	}
 
+	private bool isDistributing;
 
-	void DistributePlants ()
+	IEnumerator DistributePlants ()
 	{
-		// get a list of all the available plant coordinates
-		List<Vector2> validCoords = GetValidCoordsForType (PlantType.corn);
+		isDistributing = true;
+		StartCoroutine (DistributeCorn ());
+		while (isDistributing) {
+			yield return new WaitForEndOfFrame ();
+		}
+
+		isDistributing = true;
+		StartCoroutine (DistributePotato ());
+		while (isDistributing) {
+			yield return new WaitForEndOfFrame ();
+		}
+
+		isDistributing = true;
+		StartCoroutine (DistributeOnion ());
+		while (isDistributing) {
+			yield return new WaitForEndOfFrame ();
+		}
+		Debug.Log ("Done Spawning");
+	}
+
+	IEnumerator DistributeCorn ()
+	{
+		Debug.Log ("Planting corn...");
+		isDistributing = true;
+		// how many corn seeds
+		int numSeeds = cropRowCount + 3;
+
+		while (numSeeds > 0) {
+			// get a list of all the available plant coordinates
+			List<Vector2> validCoords = GetValidCoordsForType (PlantType.corn);
+			// stop spawning if no coords
+			if (validCoords.Count == 0) {
+				break;
+			}
+			int patchSize = Random.Range (7, 13);
+			// reduce corn to spawn
+			numSeeds--;
+			// generate a random spawn place
+			int randomPlace = Random.Range (0, validCoords.Count);
+			FloodFillCorn (validCoords [randomPlace], patchSize, 1000);
+			yield return new WaitForEndOfFrame ();
+		}
+		isDistributing = false;
+	}
+
+	IEnumerator DistributePotato ()
+	{
+		Debug.Log ("Planting potato...");
+		isDistributing = true;
+		// how many seeds
+		int numSeeds = 2 * cropRowCount;
+		while (numSeeds > 0) {
+			// get a list of all the available plant coordinates
+			List<Vector2> validCoords = GetValidCoordsForType (PlantType.potato);
+			// stop spawning if no coords
+			if (validCoords.Count == 0) {
+				break;
+			}
+			// reduce corn to spawn
+			numSeeds--;
+			// generate a random spawn place
+			int randomPlace = Random.Range (0, validCoords.Count);
+			SpawnPotato (validCoords [randomPlace]);
+			yield return new WaitForEndOfFrame ();
+		}
+		isDistributing = false;
+	}
+
+	IEnumerator DistributeOnion ()
+	{
+		Debug.Log ("Planting onions...");
+		isDistributing = true;
+		// how many seeds
+		int numSeeds = cropRowCount - 1;
+		while (numSeeds > 0) {
+			// get a list of all the available plant coordinates
+			List<Vector2> validCoords = GetValidCoordsForType (PlantType.onion);
+			// stop spawning if no coords
+			if (validCoords.Count == 0) {
+				break;
+			}
+			int patchSize = Random.Range (1, 4);
+			// reduce corn to spawn
+			numSeeds--;
+			// generate a random spawn place
+			int randomPlace = Random.Range (0, validCoords.Count);
+			FloodFillOnion (validCoords [randomPlace], patchSize, 1000);
+			yield return new WaitForEndOfFrame ();
+		}
+		isDistributing = false;
+	}
+
+	void FloodFillCorn (Vector2 pos, int amount, float radius)
+	{
+		LinkedList<WorldTile> cells = GetEmptyCropCellsFloodFill ((int)pos.x, (int)pos.y, radius, amount);
+		while (cells.Count > 0) {
+			// get each cell
+			WorldTile cell = cells.First.Value;
+			cells.RemoveFirst ();
+			// make corn
+			GameObject obj = Instantiate (cornPrefab, new Vector3 (cell.x, 0, cell.y), Quaternion.identity);
+			PlantBase plant = obj.GetComponent<PlantBase> ();
+			plant.gridPos = new Vector2 (cell.x, cell.y);
+			// set corn in world
+			world [cell.x, cell.y].plant = plant;
+		}
+	}
+
+	void SpawnPotato (Vector2 pos)
+	{
+		WorldTile cell = world [(int)pos.x, (int)pos.y];
+		GameObject obj = Instantiate (potatoPrefab, new Vector3 (cell.x, 0, cell.y), Quaternion.identity);
+		PlantBase plant = obj.GetComponent<PlantBase> ();
+		plant.gridPos = new Vector2 (cell.x, cell.y);
+		// set potato in world
+		world [cell.x, cell.y].plant = plant;
+
+	}
+
+	void FloodFillOnion (Vector2 pos, int amount, float radius)
+	{
+		LinkedList<WorldTile> cells = GetEmptyCropCellsFloodFill ((int)pos.x, (int)pos.y, radius, amount);
+		while (cells.Count > 0) {
+			// get each cell
+			WorldTile cell = cells.First.Value;
+			cells.RemoveFirst ();
+			// make onion
+			GameObject obj = Instantiate (onionPrefab, new Vector3 (cell.x, 0, cell.y), Quaternion.identity);
+			PlantBase plant = obj.GetComponent<PlantBase> ();
+			plant.gridPos = new Vector2 (cell.x, cell.y);
+			// set plant
+			world [cell.x, cell.y].plant = plant;
+		}
+	}
+
+	// returns a breadth first flood fill
+	LinkedList<WorldTile> GetEmptyCropCellsFloodFill (int x, int y, float radius, int amount = int.MaxValue)
+	{
+		int count = 0;
+		float radiusSqr = radius * radius;
+		LinkedList<WorldTile> openList = new LinkedList<WorldTile> ();
+		LinkedList<WorldTile> closedList = new LinkedList<WorldTile> ();
+		// add to open list
+		openList.AddLast (world [x, y]);
+		// get neighbours
+		while (openList.Count > 0) {
+			// grab the first and mark it
+			WorldTile currentTile = openList.First.Value;
+			currentTile.marked = true;
+			closedList.AddLast (currentTile);
+			openList.RemoveFirst ();
+
+			count++;
+			if (count >= amount) {
+				break;
+			}
+
+			// get the neighbours and add to open list
+			WorldTile[] neighbours = GetNeighbouringCropCells (currentTile.x, currentTile.y);
+			for (int i = 0; i < neighbours.Length; i++) {
+
+				// skip if marked
+				if (neighbours [i].marked) {
+					continue;
+				}
+
+				// we've visited this tile
+				neighbours [i].marked = true;
+
+				// skip if plant
+				if (neighbours [i].hasPlant) {
+					continue;
+				}
+				// skip if too far
+				int xDiff = neighbours [i].x - x;
+				int yDiff = neighbours [i].y - y;
+
+				float dist = xDiff * xDiff + yDiff * yDiff;
+				if (dist > radiusSqr) {
+					continue;
+				}
+				// only add if a valid crop
+				openList.AddLast (neighbours [i]);
+			}
+		}
+
+		ClearMarkedTiles ();
+		return closedList;
+	}
+
+	LinkedList<WorldTile> GetEmptyCropCellsInRadius (int x, int y, float radius)
+	{
+		LinkedList<WorldTile> tiles = new LinkedList<WorldTile> ();
+		int lowX = (int)Mathf.Max (0, x - radius);
+		int lowY = (int)Mathf.Max (0, y - radius);
+		int upX = (int)Mathf.Min (worldX, x + radius);
+		int upY = (int)Mathf.Min (worldY, y + radius);
+		float radiusSqr = radius * radius;
+
+		for (int i = lowX; i < upX; i++) {
+			for (int j = lowY; j < upY; j++) {
+				// skip if marked
+				if (world [i, j].marked) {
+					continue;
+				}
+
+				// skip if not a plant
+				if (world [i, j].tileType != TileType.plant) {
+					continue;
+				}
+
+				// skip if already occupied
+				if (world [i, j].hasPlant) {
+					continue;
+				}
+
+				// sqr dist
+				float sqrDist = (x - i) * (x - i) + (y - j) * (y - j);
+				// check if within radius
+				if (sqrDist < radiusSqr) {
+					tiles.AddLast (world [i, j]);
+				}
+			}
+		}
+
+		return tiles;
+	}
+
+	void SpawnPlantAtTile (WorldTile t, PlantType typ)
+	{
+		GameObject prefab = cornPrefab;
+
+		switch (typ) {
+		case PlantType.corn:
+			prefab = cornPrefab;
+			break;
+		case PlantType.potato:
+			prefab = potatoPrefab;
+			break;
+		}
+		GameObject newPlant = Instantiate (prefab, new Vector3 (t.x, 0, t.y), Quaternion.identity);
+		PlantBase plantScript = newPlant.GetComponent<PlantBase> ();
+		plantScript.gridPos = new Vector2 (t.x, t.y);
+		t.plant = plantScript;
 	}
 
 	List<Vector2> GetValidCoordsForType (PlantType typ)
@@ -48,16 +301,87 @@ public class PlantManager : MonoBehaviour
 		for (int i = 0; i < worldX; i++) {
 			for (int j = 0; j < worldY; j++) {
 				// i want a functor and a filter here :s
+				bool isValid = false;
+
+				// skip if not a plant
+				if (world [i, j].tileType != TileType.plant) {
+					continue;
+				}
+
+				// can't spawn a plant on top of another plant
+				if (world [i, j].hasPlant) {
+					continue;
+				}
+
 				// welcome to the imperative version!
 				switch (typ) {
+				case PlantType.corn:
+					isValid = CheckCornValid (i, j);
+					break;
+				case PlantType.potato:
+					isValid = CheckPotatoValid (i, j);
+					break;
+				case PlantType.onion:
+					isValid = CheckOnionValid (i, j);
+					break;
+				case PlantType.garlic:
+					isValid = CheckPotatoValid (i, j);
+					break;
+				case PlantType.shroom:
+					isValid = CheckPotatoValid (i, j);
+					break;
+				}
 
+				if (isValid) {
+					list.Add (new Vector2 (i, j));
 				}
 			}
 		}
 		return list;
 	}
 
-	
+	bool CheckCornValid (int x, int y)
+	{
+		WorldTile[] neighbours = GetNeighbouringCropCells (new Vector2 (x, y));
+		for (int i = 0; i < neighbours.Length; i++) {
+			// skip if there is a plant, this ensures corn has gaps in it for other plants
+			if (neighbours [i].hasPlant) {
+				continue;
+			}
+		}
+		return true;
+	}
+
+	bool CheckPotatoValid (int x, int y)
+	{
+		WorldTile[] neighbours = GetNeighbouringCropCells (x, y);
+		// skip if 4 neighbours, potatos are only found on row edges
+		if (neighbours.Length == 4) {
+			return false;
+		}
+		for (int i = 0; i < neighbours.Length; i++) {
+			// skip if no plant
+			if (!neighbours [i].hasPlant) {
+				continue;
+			}
+
+			if (neighbours [i].plant.plantType == PlantType.potato) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool CheckOnionValid (int x, int y)
+	{
+		WorldTile[] neighbours = GetNeighbouringCropCells (x, y);
+		// skip if 4 neighbours, onions are only found on row edges
+		if (neighbours.Length == 4) {
+			return false;
+		}
+		return true;
+	}
+
 	void GenerateWorld (int rowNum, int rowEnd, bool needPath)
 	{
 		int rowsLeft = rowEnd - rowNum;
@@ -65,6 +389,7 @@ public class PlantManager : MonoBehaviour
 			// create a path row
 			FillPathRow (rowNum);
 			GenerateWorld (rowNum + 1, rowEnd, false);
+			return;
 		}
 
 		// special case for ending fields nicely
@@ -72,33 +397,50 @@ public class PlantManager : MonoBehaviour
 			FillCropRows (rowNum, rowsLeft);
 			return;
 		}
-		int rowWidth = Random.Range (1, 3);
+		int rowWidth = Random.Range (1, 4);
 
 		FillCropRows (rowNum, rowWidth);
 		GenerateWorld (rowNum + rowWidth, rowEnd, true);
 	}
 
+	void CreateHedge (int x, int y)
+	{
+		world [x, y] = new WorldTile (TileType.hedge, x, y);
+		Instantiate (hedgePrefab, new Vector3 (x, 0, y), Quaternion.identity);
+	}
+
+	void CreatePath (int x, int y)
+	{
+		world [x, y] = new WorldTile (TileType.path, x, y);
+		Instantiate (pathPrefab, new Vector3 (x, 0, y), Quaternion.identity);
+	}
+
+	void CreatePlant (int x, int y)
+	{
+		world [x, y] = new WorldTile (TileType.plant, x, y);
+	}
+
 	void FillHedgeRow (int rowIndex)
 	{
 		for (int i = 0; i < worldY; i++) {
-			world [rowIndex, i] = new WorldTile (TileType.hedge, rowIndex, i);
+			CreateHedge (rowIndex, i);
 		}
 	}
 
 	void FillPathRow (int rowIndex)
 	{
 		// hedge then path
-		world [rowIndex, 0] = new WorldTile (TileType.hedge, rowIndex, 0);
-		world [rowIndex, 1] = new WorldTile (TileType.path, rowIndex, 1);
+		CreateHedge (rowIndex, 0);
+		CreatePath (rowIndex, 1);
 
 		// fill the path row...
 		for (int i = 2; i < worldY - 2; i++) {
-			world [rowIndex, i] = new WorldTile (TileType.path, rowIndex, i);
+			CreatePath (rowIndex, i);
 		}
 
 		// path then hedge
-		world [rowIndex, worldY - 2] = new WorldTile (TileType.path, rowIndex, worldY - 2);
-		world [rowIndex, worldY - 1] = new WorldTile (TileType.hedge, rowIndex, worldY - 1);
+		CreatePath (rowIndex, worldY - 2);
+		CreateHedge (rowIndex, worldY - 1);
 	}
 
 	void FillCropRows (int firstRowNum, int count)
@@ -106,18 +448,20 @@ public class PlantManager : MonoBehaviour
 		for (int x = 0; x < count; x++) {
 			int rowIndex = firstRowNum + x;
 			// hedge then path
-			world [rowIndex, 0] = new WorldTile (TileType.hedge, rowIndex, 0);
-			world [rowIndex, 1] = new WorldTile (TileType.path, rowIndex, 1);
+			CreateHedge (rowIndex, 0);
+			CreatePath (rowIndex, 1);
 
-			// fill the path row...
+			// fill the plant row...
 			for (int i = 2; i < worldY - 2; i++) {
-				world [rowIndex, i] = new WorldTile (TileType.plant, rowIndex, i);
+				CreatePlant (rowIndex, i);
 			}
 
 			// path then hedge
-			world [rowIndex, worldY - 2] = new WorldTile (TileType.path, rowIndex, worldY - 2);
-			world [rowIndex, worldY - 1] = new WorldTile (TileType.hedge, rowIndex, worldY - 1);
+			CreatePath (rowIndex, worldY - 2);
+			CreateHedge (rowIndex, worldY - 1);
 		}
+
+		cropRowCount++;
 	}
 
 	// Update is called once per frame
@@ -126,9 +470,22 @@ public class PlantManager : MonoBehaviour
 		
 	}
 
+	void ClearMarkedTiles ()
+	{
+		for (int i = 0; i < worldX; i++) {
+			for (int j = 0; j < worldY; j++) {
+				world [i, j].marked = false;
+			}
+		}
+	}
+
 	static Vector2[] directions = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
 
-
+	/// <summary>
+	/// Gets the neighbours for a position.
+	/// </summary>
+	/// <returns>A length 4 array of neighbours, they can be null</returns>
+	/// <param name="pos">Position.</param>
 	public static PlantBase[] GetNeighboursForPosition (Vector2 pos)
 	{
 		PlantBase[] neighbours = new PlantBase[directions.Length];
@@ -148,6 +505,11 @@ public class PlantManager : MonoBehaviour
 		return neighbours;
 	}
 
+	/// <summary>
+	/// Gets the neighbouring crop cells.
+	/// </summary>
+	/// <returns>The neighbouring crop cells, no null values.</returns>
+	/// <param name="pos">Position.</param>
 	public static WorldTile[] GetNeighbouringCropCells (Vector2 pos)
 	{
 		List<WorldTile> neighbours = new List<WorldTile> (directions.Length);
@@ -162,6 +524,12 @@ public class PlantManager : MonoBehaviour
 			}
 		}
 		return neighbours.ToArray ();
+	}
+
+	public static WorldTile[] GetNeighbouringCropCells (int x, int y)
+	{
+		Vector2 pos = new Vector2 (x, y);
+		return GetNeighbouringCropCells (pos);
 	}
 
 	PlantType GetPlantInTile (int x, int y)

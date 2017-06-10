@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public struct WorldTile
+public class WorldTile
 {
 	private int _x;
 	private int _y;
+	public bool marked;
 
 	public int x {
 		get {
