@@ -17,6 +17,9 @@ public class PlantCorn : PlantBase
 	// Update is called once per frame
 	void Update ()
 	{
+		if (!GameManager.isPlaying) {
+			return;
+		}
 		if (Time.time > nextInfectionTime) {
 			nextInfectionTime += Random.Range (minInfectionTime, maxInfectionTime);
 			SpreadInfection ();

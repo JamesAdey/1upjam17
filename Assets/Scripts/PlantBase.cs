@@ -12,7 +12,10 @@ public enum PlantStance
 public enum PlantType
 {
 	corn,
-	potato
+	potato,
+	onion,
+	garlic,
+	shroom
 }
 
 public abstract class PlantBase : MonoBehaviour
