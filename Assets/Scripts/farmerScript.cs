@@ -63,7 +63,7 @@ public class farmerScript : MonoBehaviour {
 
     private Vector3 chooseNextGrid()
     {
-        
+        return Vector3.up;
     }
 
     private void calculatePath()
@@ -71,7 +71,7 @@ public class farmerScript : MonoBehaviour {
         List<KeyValuePair<WorldTile, WorldTile>> path = new List<KeyValuePair<WorldTile, WorldTile>>();
         List<WorldTile> openSet = new List<WorldTile>();
 
-        openSet.Add(PlantManager.singleton.getTileInPos(gridPos.x,gridPos.y));
+        
 
     }
 
