@@ -532,9 +532,9 @@ public class PlantManager : MonoBehaviour
 		return GetNeighbouringCropCells (pos);
 	}
 
-	PlantType GetPlantInTile (int x, int y)
+	public WorldTile GetTile (int x, int y)
 	{
-		return world [x, y].plant.plantType;
+		return world [x, y];
 	}
 
 	public static bool IsValidWorldPos (int x, int y)
