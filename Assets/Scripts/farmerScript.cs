@@ -11,6 +11,7 @@ public class farmerScript : MonoBehaviour {
     private Vector2[] adjacentPath;
     private Transform farmerTransform;
     private Vector3 direction3;
+    private Vector3[] movementPath;
 
     public float speed;
 
@@ -33,12 +34,13 @@ public class farmerScript : MonoBehaviour {
             if (Time.time > waitTime)
             {
                 //choose Location
+                calculatePath();
             }
         }else
         {
             if (distanceToPoint(nextGridPos) < 0.2f)
             {
-                //choose next grid
+                nextGridPos = chooseNextGrid();
             }else
             {
                 
@@ -59,6 +61,19 @@ public class farmerScript : MonoBehaviour {
         return (farmerTransform.position - pos).sqrMagnitude;
     }
 
+    private Vector3 chooseNextGrid()
+    {
+        
+    }
+
+    private void calculatePath()
+    {
+        List<KeyValuePair<WorldTile, WorldTile>> path = new List<KeyValuePair<WorldTile, WorldTile>>();
+        List<WorldTile> openSet = new List<WorldTile>();
+
+        openSet.Add(PlantManager.singleton.getTileInPos(gridPos.x,gridPos.y));
+
+    }
 
     private void checkAdjacent()
     {
