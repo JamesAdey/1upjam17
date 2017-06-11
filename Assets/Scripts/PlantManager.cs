@@ -24,11 +24,16 @@ public class PlantManager : MonoBehaviour
 	public GameObject linePathPrefab;
 
 
+	void Awake ()
+	{
+		singleton = this;
+	}
+
 	// Use this for initialization
 	void Start ()
 	{
 		cropRowCount = 0;
-		singleton = this;
+
 		world = new WorldTile[worldX, worldY];
 
 		FillInWorld ();
