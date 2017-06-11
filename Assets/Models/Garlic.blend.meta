@@ -1,51 +1,33 @@
 fileFormatVersion: 2
-guid: 2fc00dc2f2746754cba8653bdc192075
-timeCreated: 1497121595
+guid: d7cb3999fff8c8b43b1deb86d5a6b9b7
+timeCreated: 1497166840
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: //RootNode
-    100002: dirt_tile
-    100004: Plane
-    100006: Plane_001
-    100008: Plane_002
-    100010: path_corner
-    100012: path_line
-    100014: path_tJunc
-    400000: //RootNode
-    400002: dirt_tile
-    400004: Plane
-    400006: Plane_001
-    400008: Plane_002
-    400010: path_corner
-    400012: path_line
-    400014: path_tJunc
-    2300000: //RootNode
-    2300002: dirt_tile
-    2300004: Plane
-    2300006: Plane_001
-    2300008: Plane_002
-    2300010: path_corner
-    2300012: path_line
-    2300014: path_tJunc
-    3300000: //RootNode
-    3300002: dirt_tile
-    3300004: Plane
-    3300006: Plane_001
-    3300008: Plane_002
-    3300010: path_corner
-    3300012: path_line
-    3300014: path_tJunc
-    4300000: dirt_tile
-    4300002: Plane_002
-    4300004: Plane
-    4300006: Plane_001
-    4300008: path_tJunc
-    4300010: path_line
-    4300012: path_corner
+    100000: Armature
+    100002: Bulb
+    100004: //RootNode
+    100006: garlic_bulb
+    100008: Head
+    100010: onion_rot
+    100012: Root
+    100014: Sphere
+    400000: Armature
+    400002: Bulb
+    400004: //RootNode
+    400006: garlic_bulb
+    400008: Head
+    400010: onion_rot
+    400012: Root
+    400014: Sphere
+    2300000: Sphere
+    3300000: Sphere
+    4300000: garlic_bulb
+    4300002: Sphere
     7400000: Default Take
     9500000: //RootNode
+    13700000: garlic_bulb
   materials:
     importMaterials: 1
     materialName: 0
@@ -107,10 +89,10 @@ ModelImporter:
     rootMotionBoneName: 
     rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

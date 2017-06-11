@@ -47,7 +47,8 @@ public class MitePlayer : MonoBehaviour
 	{
 		RaycastHit hit;
 		if (Physics.Raycast (thisTransform.position, thisTransform.forward, out hit, 0.5f)) {
-			hit.transform.SendMessage ("InfectPlant", SendMessageOptions.DontRequireReceiver);
+			Debug.Log ("Hit");
+			hit.transform.root.SendMessage ("InfectPlant", SendMessageOptions.DontRequireReceiver);
 		}
 	}
 

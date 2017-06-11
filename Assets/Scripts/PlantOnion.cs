@@ -7,6 +7,7 @@ public class PlantOnion : PlantBase
 
 	public override void OnPlantStanceChanged ()
 	{
-
+		// SOUND THE ALARM!
+		CreateAlarm ();
 	}
 }

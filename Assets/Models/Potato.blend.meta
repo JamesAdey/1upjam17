@@ -1,53 +1,26 @@
 fileFormatVersion: 2
-guid: 2fc00dc2f2746754cba8653bdc192075
-timeCreated: 1497121595
+guid: 8d67f674d7cf6874ca628aa173c9a725
+timeCreated: 1497153576
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: //RootNode
-    100002: dirt_tile
-    100004: Plane
-    100006: Plane_001
-    100008: Plane_002
-    100010: path_corner
-    100012: path_line
-    100014: path_tJunc
-    400000: //RootNode
-    400002: dirt_tile
-    400004: Plane
-    400006: Plane_001
-    400008: Plane_002
-    400010: path_corner
-    400012: path_line
-    400014: path_tJunc
-    2300000: //RootNode
-    2300002: dirt_tile
-    2300004: Plane
-    2300006: Plane_001
-    2300008: Plane_002
-    2300010: path_corner
-    2300012: path_line
-    2300014: path_tJunc
-    3300000: //RootNode
-    3300002: dirt_tile
-    3300004: Plane
-    3300006: Plane_001
-    3300008: Plane_002
-    3300010: path_corner
-    3300012: path_line
-    3300014: path_tJunc
-    4300000: dirt_tile
-    4300002: Plane_002
-    4300004: Plane
-    4300006: Plane_001
-    4300008: path_tJunc
-    4300010: path_line
-    4300012: path_corner
+    100000: Armature
+    100002: Head
+    100004: //RootNode
+    100006: potato
+    100008: Root
+    400000: Armature
+    400002: Head
+    400004: //RootNode
+    400006: potato
+    400008: Root
+    4300000: potato
     7400000: Default Take
     9500000: //RootNode
+    13700000: potato
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
   animations:
@@ -72,7 +45,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 0.75
     meshCompression: 0
     addColliders: 0
     importBlendShapes: 1
@@ -107,10 +80,10 @@ ModelImporter:
     rootMotionBoneName: 
     rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
-    hasExtraRoot: 1
+    hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

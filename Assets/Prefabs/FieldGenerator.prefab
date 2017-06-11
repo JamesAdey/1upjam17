@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1350519756778448}
+  m_IsPrefabParent: 1
+--- !u!1 &1350519756778448
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4986325542868250}
+  - component: {fileID: 114570703081112238}
+  - component: {fileID: 114445195695657704}
+  m_Layer: 0
+  m_Name: FieldGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4986325542868250
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1350519756778448}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &114445195695657704
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1350519756778448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23fb887f9955a9849b3fd90910b4021a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linePathMesh: {fileID: 4300010, guid: 2fc00dc2f2746754cba8653bdc192075, type: 3}
+  cornerPathMesh: {fileID: 4300012, guid: 2fc00dc2f2746754cba8653bdc192075, type: 3}
+  tJuncPathMesh: {fileID: 4300008, guid: 2fc00dc2f2746754cba8653bdc192075, type: 3}
+--- !u!114 &114570703081112238
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1350519756778448}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df6df04fbefb84459f602f8cd36af48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldX: 20
+  worldY: 20
+  hedgePrefab: {fileID: 1166987447728276, guid: 26394c533f126c947b889aa5284d9668,
+    type: 2}
+  pathPrefab: {fileID: 1111544674954246, guid: 56e5141a33243a64e9f06a24d96655ae, type: 2}
+  cornPrefab: {fileID: 1651550024600342, guid: 3823322856eb1f245a65e1c1fa795bb2, type: 2}
+  potatoPrefab: {fileID: 1364427626550124, guid: f9a7ad66a81c8834b8b77f7e0bde5d80,
+    type: 2}
+  onionPrefab: {fileID: 1791902943715822, guid: be0619135661ad64b8d9039ba6ee4094,
+    type: 2}
+  garlicPrefab: {fileID: 1811186184051320, guid: 22e2d4844cb35904ebe1b31cd174e9c4,
+    type: 2}
+  cropRowCount: 0
+  tJuncPathPrefab: {fileID: 0}
+  linePathPrefab: {fileID: 0}

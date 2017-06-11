@@ -14,8 +14,15 @@ public class PlantManager : MonoBehaviour
 	public GameObject cornPrefab;
 	public GameObject potatoPrefab;
 	public GameObject onionPrefab;
+	public GameObject garlicPrefab;
 
 	public int cropRowCount = 0;
+	List<PathTile> pathTiles = new List<PathTile> ();
+
+	// for t junction tiles, their forward is the "other" direction
+	public GameObject tJuncPathPrefab;
+	public GameObject linePathPrefab;
+
 
 	// Use this for initialization
 	void Start ()
@@ -40,8 +47,19 @@ public class PlantManager : MonoBehaviour
 		FillPathRow (worldX - 2);
 		FillHedgeRow (worldX - 1);
 
+
+		// orient the paths
+		OrientPaths ();
+
 		StartCoroutine (DistributePlants ());
 
+	}
+
+	void OrientPaths ()
+	{
+		for (int i = 0; i < pathTiles.Count; i++) {
+			OrientPathTile (pathTiles [i]);
+		}
 	}
 
 	private bool isDistributing;
@@ -67,11 +85,19 @@ public class PlantManager : MonoBehaviour
 		}
 
 		isDistributing = true;
+		StartCoroutine (DistributeGarlic ());
+		while (isDistributing) {
+			yield return new WaitForEndOfFrame ();
+		}
+
+		isDistributing = true;
 		StartCoroutine (FillRemaining ());
 		while (isDistributing) {
 			yield return new WaitForEndOfFrame ();
 		}
 		Debug.Log ("Done Spawning");
+		// BEGIN!
+		GameManager.isPlaying = true;
 	}
 
 	IEnumerator FillRemaining ()
@@ -168,6 +194,29 @@ public class PlantManager : MonoBehaviour
 		isDistributing = false;
 	}
 
+	IEnumerator DistributeGarlic ()
+	{
+		Debug.Log ("Planting garlic...");
+		isDistributing = true;
+		// how many seeds
+		int numSeeds = cropRowCount;
+		while (numSeeds > 0) {
+			// get a list of all the available plant coordinates
+			List<Vector2> validCoords = GetValidCoordsForType (PlantType.garlic);
+			// stop spawning if no coords
+			if (validCoords.Count == 0) {
+				break;
+			}
+			// reduce corn to spawn
+			numSeeds--;
+			// generate a random spawn place
+			int randomPlace = Random.Range (0, validCoords.Count);
+			SpawnGarlic (validCoords [randomPlace]);
+			yield return new WaitForEndOfFrame ();
+		}
+		isDistributing = false;
+	}
+
 	void FloodFillCorn (Vector2 pos, int amount, float radius)
 	{
 		LinkedList<WorldTile> cells = GetEmptyCropCellsFloodFill ((int)pos.x, (int)pos.y, radius, amount);
@@ -188,6 +237,17 @@ public class PlantManager : MonoBehaviour
 	{
 		WorldTile cell = world [(int)pos.x, (int)pos.y];
 		GameObject obj = Instantiate (potatoPrefab, new Vector3 (cell.x, 0, cell.y), Quaternion.identity);
+		PlantBase plant = obj.GetComponent<PlantBase> ();
+		plant.gridPos = new Vector2 (cell.x, cell.y);
+		// set potato in world
+		world [cell.x, cell.y].plant = plant;
+
+	}
+
+	void SpawnGarlic (Vector2 pos)
+	{
+		WorldTile cell = world [(int)pos.x, (int)pos.y];
+		GameObject obj = Instantiate (garlicPrefab, new Vector3 (cell.x, 0, cell.y), Quaternion.identity);
 		PlantBase plant = obj.GetComponent<PlantBase> ();
 		plant.gridPos = new Vector2 (cell.x, cell.y);
 		// set potato in world
@@ -353,7 +413,7 @@ public class PlantManager : MonoBehaviour
 					isValid = CheckOnionValid (i, j);
 					break;
 				case PlantType.garlic:
-					isValid = CheckPotatoValid (i, j);
+					isValid = CheckGarlicValid (i, j);
 					break;
 				case PlantType.shroom:
 					isValid = CheckPotatoValid (i, j);
@@ -413,6 +473,36 @@ public class PlantManager : MonoBehaviour
 		return true;
 	}
 
+	bool CheckGarlicValid (int x, int y)
+	{
+		WorldTile[] neighbours = GetNeighbouringCropCells (x, y);
+		// skip if less than 3 neighbours, garlic only appears in big patches
+		if (neighbours.Length < 3) {
+			return false;
+		}
+		int cornCount = 0;
+		for (int i = 0; i < neighbours.Length; i++) {
+			// skip if no plant
+			if (!neighbours [i].hasPlant) {
+				continue;
+			}
+			if (neighbours [i].plant.plantType == PlantType.corn) {
+				cornCount++;
+				continue;
+			}
+			// can't spawn next to other garlic
+			if (neighbours [i].plant.plantType == PlantType.garlic) {
+				return false;
+			}
+		}
+		// if more than 2 corn neighbors? we can't cause enough carnage
+		if (cornCount > 2) {
+			return false;
+		}
+
+		return true;
+	}
+
 	void GenerateWorld (int rowNum, int rowEnd, bool needPath)
 	{
 		int rowsLeft = rowEnd - rowNum;
@@ -443,7 +533,10 @@ public class PlantManager : MonoBehaviour
 	void CreatePath (int x, int y)
 	{
 		world [x, y] = new WorldTile (TileType.path, x, y);
-		Instantiate (pathPrefab, new Vector3 (x, 0, y), Quaternion.identity);
+		GameObject path = Instantiate (pathPrefab, new Vector3 (x, 0, y), Quaternion.identity);
+		PathTile script = path.GetComponent<PathTile> ();
+		script.SetPos (x, y);
+		pathTiles.Add (script);
 	}
 
 	void CreatePlant (int x, int y)
@@ -512,6 +605,59 @@ public class PlantManager : MonoBehaviour
 
 	static Vector2[] directions = { Vector2.up, Vector2.down, Vector2.left, Vector2.right };
 
+	public void OrientPathTile (PathTile tile)
+	{
+		Vector2 pos = tile.GetPosition ();
+		bool[] nextPaths = new bool[4];
+		int validDirs = 0;
+		for (int i = 0; i < directions.Length; i++) {
+			int x = (int)(pos + directions [i]).x;
+			int y = (int)(pos + directions [i]).y;
+			if (IsValidWorldPos (x, y) && world [x, y].tileType == TileType.path) {
+				validDirs++;
+				nextPaths [i] = true;
+			}
+		}
+
+		Vector3 finalDir = Vector3.zero;
+
+		// 3 directions, therefore T junction
+		if (validDirs == 3) {
+			for (int i = 0; i < nextPaths.Length; i++) {
+				if (nextPaths [i]) {
+					finalDir += (Vector3)directions [i];
+				}
+			}
+			tile.SetType (PathType.tJunc);
+		}
+		// 2 directions
+		else if (validDirs == 2) {
+			
+			if (nextPaths [0] && nextPaths [1]) {
+				finalDir = directions [0];
+				tile.SetType (PathType.line);
+			} else if (nextPaths [2] && nextPaths [3]) {
+				finalDir = directions [2];
+				tile.SetType (PathType.line);
+			} else {
+				for (int i = 0; i < nextPaths.Length; i++) {
+					if (nextPaths [i]) {
+						finalDir += (Vector3)directions [i];
+					}
+				}
+				tile.SetType (PathType.corner);
+			}
+
+		}
+
+		// move Y to Z
+		finalDir.z = finalDir.y;
+		finalDir.y = 0;
+		tile.SetLookDirection (finalDir);
+
+		// work out is linear?
+	}
+
 	/// <summary>
 	/// Gets the neighbours for a position.
 	/// </summary>
@@ -525,6 +671,41 @@ public class PlantManager : MonoBehaviour
 		Vector2 newPos;
 		for (int i = 0; i < directions.Length; i++) {
 			newPos = pos + directions [i];
+			x = (int)newPos.x;
+			y = (int)newPos.y;
+			if (IsValidWorldPos (x, y) && singleton.world [x, y].hasPlant) {
+				neighbours [i] = singleton.world [x, y].plant;
+			} else {
+				neighbours [i] = null;
+			}
+		}
+		return neighbours;
+	}
+
+	static Vector2[] directions8 = {
+		Vector2.up,
+		Vector2.down,
+		Vector2.left,
+		Vector2.right,
+		Vector2.up + Vector2.right,
+		Vector2.up + Vector2.left,
+		Vector2.down + Vector2.right,
+		Vector2.down + Vector2.left
+	};
+
+	/// <summary>
+	/// Gets the neighbours for a position.
+	/// </summary>
+	/// <returns>A length 4 array of neighbours, they can be null</returns>
+	/// <param name="pos">Position.</param>
+	public static PlantBase[] Get8NeighboursForPosition (Vector2 pos)
+	{
+		PlantBase[] neighbours = new PlantBase[directions8.Length];
+
+		int x, y;
+		Vector2 newPos;
+		for (int i = 0; i < directions8.Length; i++) {
+			newPos = pos + directions8 [i];
 			x = (int)newPos.x;
 			y = (int)newPos.y;
 			if (IsValidWorldPos (x, y) && singleton.world [x, y].hasPlant) {
@@ -551,6 +732,27 @@ public class PlantManager : MonoBehaviour
 			x = (int)newPos.x;
 			y = (int)newPos.y;
 			if (IsValidWorldPos (x, y) && singleton.world [x, y].tileType == TileType.plant) {
+				neighbours.Add (singleton.world [x, y]);
+			}
+		}
+		return neighbours.ToArray ();
+	}
+
+	/// <summary>
+	/// Gets the neighbouring cells. No null values
+	/// </summary>
+	/// <returns>The neighbouring cells.</returns>
+	/// <param name="pos">Position.</param>
+	public static WorldTile[] GetNeighbouringCells (Vector2 pos)
+	{
+		List<WorldTile> neighbours = new List<WorldTile> (directions.Length);
+		int x, y;
+		Vector2 newPos;
+		for (int i = 0; i < directions.Length; i++) {
+			newPos = pos + directions [i];
+			x = (int)newPos.x;
+			y = (int)newPos.y;
+			if (IsValidWorldPos (x, y)) {
 				neighbours.Add (singleton.world [x, y]);
 			}
 		}

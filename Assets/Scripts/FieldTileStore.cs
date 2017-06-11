@@ -4,23 +4,20 @@ using UnityEngine;
 
 public class TileData
 {
-	
 }
 
 public class FieldTileStore : MonoBehaviour
 {
 
+	public static FieldTileStore singleton;
 
+	public Mesh linePathMesh;
+	public Mesh cornerPathMesh;
+	public Mesh tJuncPathMesh;
 
-	// Use this for initialization
-	void Start ()
+	void Awake ()
 	{
-		
+		singleton = this;
 	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-		
-	}
+
 }

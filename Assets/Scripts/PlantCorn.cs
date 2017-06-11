@@ -5,13 +5,16 @@ using UnityEngine;
 public class PlantCorn : PlantBase
 {
 	const int minInfectionTime = 2;
-	const int maxInfectionTime = 11;
-	float nextInfectionTime;
+	const int maxInfectionTime = 7;
+	float nextInfectionTime = 0;
+	bool needInfection;
+	PlantMaterialControl[] materialControllers;
 
 	// Use this for initialization
 	void Start ()
 	{
 		plantType = PlantType.corn;
+		materialControllers = GetComponentsInChildren<PlantMaterialControl> ();
 	}
 	
 	// Update is called once per frame
@@ -20,15 +23,24 @@ public class PlantCorn : PlantBase
 		if (!GameManager.isPlaying) {
 			return;
 		}
-		if (Time.time > nextInfectionTime) {
-			nextInfectionTime += Random.Range (minInfectionTime, maxInfectionTime);
-			SpreadInfection ();
+		// early out if no infection required
+		if (needInfection) {
+			if (Time.time > nextInfectionTime) {
+				nextInfectionTime = Time.time + Random.Range (minInfectionTime, maxInfectionTime);
+				SpreadInfection ();
+				needInfection = false;
+			}
 		}
 	}
 
 	public override void OnPlantStanceChanged ()
 	{
-
+		if (GetStance () == PlantStance.friendly) {
+			needInfection = true;
+		}
+		for (int i = 0; i < materialControllers.Length; i++) {
+			materialControllers [i].SetStance (GetStance ());
+		}
 	}
 
 	void SpreadInfection ()
@@ -39,6 +51,11 @@ public class PlantCorn : PlantBase
 			// count how much corn is around us
 			int cornCount = 0;
 			for (int i = 0; i < neighbours.Length; i++) {
+				// can't have null plants
+				if (neighbours [i] == null) {
+					continue;
+				}
+
 				if (neighbours [i].plantType == PlantType.corn) {
 					cornCount++;
 				}

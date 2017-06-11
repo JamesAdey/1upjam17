@@ -22,8 +22,12 @@ public enum PlantType
 public abstract class PlantBase : MonoBehaviour
 {
 	public PlantType plantType;
-	private PlantStance _stance;
+	private PlantStance _stance = PlantStance.neutral;
 	public Vector2 gridPos;
+	public float alarmDuration = 5;
+	private float nextAlarmTime = 0;
+	public Material enemyMaterial;
+	public Material friendlyMaterial;
 
 	public PlantStance stance {
 		get {
@@ -31,9 +35,11 @@ public abstract class PlantBase : MonoBehaviour
 		}
 		protected set {
 			if (_stance != value) {
+				_stance = value;
 				OnPlantStanceChanged ();
+			} else {
+				_stance = value;
 			}
-			_stance = value;
 		}
 	}
 
@@ -45,6 +51,20 @@ public abstract class PlantBase : MonoBehaviour
 	public void InfectPlant ()
 	{
 		stance = PlantStance.friendly;
+	}
+
+	public void ClearInfection ()
+	{
+		stance = PlantStance.enemy;
+	}
+
+	public void CreateAlarm ()
+	{
+		if (Time.time > nextAlarmTime) {
+			AIManager.SpawnAlarmAtPosition (transform.position + Vector3.up, alarmDuration);
+			// 1.25 seconds between alarms
+			nextAlarmTime = Time.time + alarmDuration + 1.25f;
+		}
 	}
 
 	public abstract void OnPlantStanceChanged ();
