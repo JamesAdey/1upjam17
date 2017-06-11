@@ -17,7 +17,7 @@ public class PlantManager : MonoBehaviour
 	public GameObject garlicPrefab;
 
 	public int cropRowCount = 0;
-	List<PathTile> pathTiles = new List<PathTile> ();
+	public List<PathTile> pathTiles = new List<PathTile> ();
 
 	// for t junction tiles, their forward is the "other" direction
 	public GameObject tJuncPathPrefab;
@@ -496,6 +496,7 @@ public class PlantManager : MonoBehaviour
 				cornCount++;
 				continue;
 			}
+
 			// can't spawn next to other garlic
 			if (neighbours [i].plant.plantType == PlantType.garlic) {
 				return false;
