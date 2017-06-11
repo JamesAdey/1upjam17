@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-struct Alarm
+public struct Alarm
 {
 	public Alarm (Vector3 pos, float dur)
 	{
