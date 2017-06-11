@@ -19,39 +19,25 @@ public class PlantGarlic : PlantBase
 		
 	}
 
-	void ClearInfection ()
+	void RemoveInfection ()
 	{
 		if (stance == PlantStance.friendly) {
 			// get neighbours
-			PlantBase[] neighbours = PlantManager.GetNeighboursForPosition (gridPos);
-			// count how much corn is around us
-			int cornCount = 0;
+			PlantBase[] neighbours = PlantManager.Get8NeighboursForPosition (gridPos);
 			for (int i = 0; i < neighbours.Length; i++) {
 				// can't have null plants
 				if (neighbours [i] == null) {
 					continue;
 				}
 
-				if (neighbours [i].plantType == PlantType.corn) {
-					cornCount++;
-				}
-
-			}
-			// not enough corn?
-			if (cornCount < 2) {
-				return;
-			}
-
-			for (int i = 0; i < neighbours.Length; i++) {
-				if (neighbours [i] != null) {
-					neighbours [i].ClearInfection ();
-				}
+				neighbours [i].ClearInfection ();
 			}
 		}
 	}
 
 	public override void OnPlantStanceChanged ()
 	{
+		RemoveInfection ();
 		switch (GetStance ()) {
 		case PlantStance.enemy:
 			renderer.sharedMaterial = enemyMaterial;

@@ -24,9 +24,10 @@ public class PlantCorn : PlantBase
 			return;
 		}
 		// early out if no infection required
-		if (needInfection) {
-			if (Time.time > nextInfectionTime) {
-				nextInfectionTime = Time.time + Random.Range (minInfectionTime, maxInfectionTime);
+
+		if (Time.time > nextInfectionTime) {
+			nextInfectionTime = Time.time + Random.Range (minInfectionTime, maxInfectionTime);
+			if (needInfection) {	
 				SpreadInfection ();
 				needInfection = false;
 			}

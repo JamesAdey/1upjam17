@@ -486,6 +486,7 @@ public class PlantManager : MonoBehaviour
 			if (!neighbours [i].hasPlant) {
 				continue;
 			}
+			// don't spawn near too much corn
 			if (neighbours [i].plant.plantType == PlantType.corn) {
 				cornCount++;
 				continue;

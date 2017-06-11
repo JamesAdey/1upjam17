@@ -21,7 +21,7 @@ public class AIManager : MonoBehaviour
 {
 	public static AIManager singleton;
 
-	LinkedList<Alarm> alarms = new LinkedList<Alarm> ();
+	public LinkedList<Alarm> alarms = new LinkedList<Alarm> ();
 
 	// Use this for initialization
 	void Awake ()
